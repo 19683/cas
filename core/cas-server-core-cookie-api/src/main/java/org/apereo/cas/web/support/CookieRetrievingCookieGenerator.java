@@ -1,7 +1,6 @@
 package org.apereo.cas.web.support;
 
 import org.apereo.cas.authentication.RememberMeCredential;
-import org.apereo.cas.util.CollectionUtils;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.util.Collection;
+
 
 /**
  * Extends CookieGenerator to allow you to retrieve a value from a request.
@@ -59,10 +60,10 @@ public class CookieRetrievingCookieGenerator extends CookieGenerator implements 
                                            final int rememberMeMaxAge, final boolean httpOnly) {
         super.setCookieName(name);
         super.setCookiePath(path);
-        this.setCookieDomain(domain);
         super.setCookieMaxAge(maxAge);
         super.setCookieSecure(secure);
         super.setCookieHttpOnly(httpOnly);
+        this.setCookieDomain(domain);
         this.casCookieValueManager = casCookieValueManager;
         this.rememberMeMaxAge = rememberMeMaxAge;
     }
@@ -125,10 +126,11 @@ public class CookieRetrievingCookieGenerator extends CookieGenerator implements 
         }
         val attributes = auth.getAttributes();
         LOGGER.trace("Located authentication attributes [{}]", attributes);
+
         if (attributes.containsKey(RememberMeCredential.AUTHENTICATION_ATTRIBUTE_REMEMBER_ME)) {
-            val rememberMeValue = attributes.getOrDefault(RememberMeCredential.AUTHENTICATION_ATTRIBUTE_REMEMBER_ME, Boolean.FALSE);
+            val rememberMeValue = (Collection) attributes.get(RememberMeCredential.AUTHENTICATION_ATTRIBUTE_REMEMBER_ME);
             LOGGER.debug("Located remember-me authentication attribute [{}]", rememberMeValue);
-            return CollectionUtils.wrapSet(rememberMeValue).contains(Boolean.TRUE);
+            return rememberMeValue.contains(Boolean.TRUE);
         }
         return Boolean.FALSE;
     }
